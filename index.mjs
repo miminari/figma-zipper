@@ -40,4 +40,23 @@ const getFileComponentsImagesURL = async (fileId, format) => {
     return renderFiles;
 }
 
-getFileComponentsImagesURL(currentFileId, 'svg');
+// 画像をダウンロードして保存する
+const saveFilesToFs = async (files, dest) => {
+    for(const file of files) {
+        const { url, fileName } = file;
+        try {
+            await saveFileFromUrlToFs(url,dest,fileName);
+        }catch (error) {
+            throw new Error('Error saving file ${fileName}');
+        }
+    }
+}
+
+// 指定したFigmaファイルからコンポーネントをダウンロードして保存する
+export const exportAssets = async (fileId, dest) => {
+    const files = await getFileComponentsImagesURL(fileId, 'svg');
+    await saveFilesToFs(files, dest);
+} 
+
+exportAssets(currentFileId, 'assets');
+
