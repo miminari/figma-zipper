@@ -69,13 +69,13 @@ export const exportAssets = async (fileId, dest) => {
 // ZIP!
 export const zipAssets = async (fileId, dest) => {
     const thisFileName = await getFileName(currentFileId);
-    console.log(thisFileName);
+    console.log(`Start download files from Figma file: ${thisFileName}...`);
     await exportAssets(fileId, dest);
     await zip({
         source: `${dest}/*`,
         destination: `./${thisFileName}_${dest}.zip`
     }).then(function () {
-        console.log('all done!');
+        console.log(`Zipped your Figma file: ${thisFileName} to ${thisFileName}_${dest}.zip!`);
     }).catch(function (err) {
         console.error(err.stack);
         process.exit(1);
