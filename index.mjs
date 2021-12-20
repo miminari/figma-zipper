@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import zip from 'bestzip';
 import * as Figma from 'figma-js';
 
 import { saveFileFromUrlToFs } from './utils/saveFileToFs.mjs';
@@ -10,10 +11,15 @@ const currentFileId = process.env.FIGMA_FILE_ID;
 
 const client = Figma.Client({ personalAccessToken: process.env.FIGMA_TOKEN || '' });
 
+//指定したファイルの名前を取得する
+const getFileName = async (fileId) => {
+    const file = await client.file(fileId);
+    return file.data.name;
+}
+
 //指定したファイルのコンポーネントを取得する
 const getFileComponents = async (fileId) => {
     const file = await client.file(fileId);
-    console.log(file.data.name);
     const fileComponents = file.data.components;
     return fileComponents;
 }
@@ -42,11 +48,11 @@ const getFileComponentsImagesURL = async (fileId, format) => {
 
 // 画像をダウンロードして保存する
 const saveFilesToFs = async (files, dest) => {
-    for(const file of files) {
+    for (const file of files) {
         const { url, fileName } = file;
         try {
-            await saveFileFromUrlToFs(url,dest,fileName);
-        }catch (error) {
+            await saveFileFromUrlToFs(url, dest, fileName);
+        } catch (error) {
             throw new Error('Error saving file ${fileName}');
         }
     }
@@ -54,9 +60,28 @@ const saveFilesToFs = async (files, dest) => {
 
 // 指定したFigmaファイルからコンポーネントをダウンロードして保存する
 export const exportAssets = async (fileId, dest) => {
-    const files = await getFileComponentsImagesURL(fileId, 'svg');
-    await saveFilesToFs(files, dest);
-} 
+    const svgFiles = await getFileComponentsImagesURL(fileId, 'svg');
+    await saveFilesToFs(svgFiles, dest);
+    const pngFiles = await getFileComponentsImagesURL(fileId, 'png');
+    await saveFilesToFs(pngFiles, dest);
+}
 
-exportAssets(currentFileId, 'assets');
+// ZIP!
+export const zipAssets = async (fileId, dest) => {
+    const thisFileName = await getFileName(currentFileId);
+    console.log(thisFileName);
+    await exportAssets(fileId, dest);
+    await zip({
+        source: `${dest}/*`,
+        destination: `./${thisFileName}_${dest}.zip`
+    }).then(function () {
+        console.log('all done!');
+    }).catch(function (err) {
+        console.error(err.stack);
+        process.exit(1);
+    });
 
+}
+
+
+zipAssets(currentFileId, 'assets');
