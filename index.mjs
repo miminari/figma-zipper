@@ -25,7 +25,7 @@ const getFileComponents = async (fileId) => {
 }
 
 // 指定したファイルのコンポーネントの画像を取得する
-const getFileComponentsImagesURL = async (fileId, format) => {
+const getFileComponentsImagesURL = async (fileId, format, scale) => {
     const fileComponents = await getFileComponents(fileId);
     const renderFiles = [];
     for (const nodeId in fileComponents) {
@@ -33,6 +33,7 @@ const getFileComponentsImagesURL = async (fileId, format) => {
             const response = await client.fileImages(fileId, {
                 ids: [nodeId],
                 format: format,
+                scale: scale
             })
             const url = response.data.images[nodeId];
             const fileName = `${fileComponents[nodeId].name}.${format}`;
@@ -60,9 +61,9 @@ const saveFilesToFs = async (files, dest) => {
 
 // 指定したFigmaファイルからコンポーネントをダウンロードして保存する
 export const exportAssets = async (fileId, dest) => {
-    const svgFiles = await getFileComponentsImagesURL(fileId, 'svg');
+    const svgFiles = await getFileComponentsImagesURL(fileId, 'svg', 1);
     await saveFilesToFs(svgFiles, dest);
-    const pngFiles = await getFileComponentsImagesURL(fileId, 'png');
+    const pngFiles = await getFileComponentsImagesURL(fileId, 'png', 2);
     await saveFilesToFs(pngFiles, dest);
 }
 
@@ -82,6 +83,5 @@ export const zipAssets = async (fileId, dest) => {
     });
 
 }
-
 
 zipAssets(currentFileId, 'assets');
