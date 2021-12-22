@@ -29,6 +29,9 @@ const getFileComponentsImagesURL = async (fileId, format, scale) => {
     const fileComponents = await getFileComponents(fileId);
     const renderFiles = [];
     for (const nodeId in fileComponents) {
+        // コンポーネントがSetかどうか（Variantsが設定されているかどうか）チェック
+        console.log( fileComponents.componetsetid );
+        // 画像を取ってくる
         try {
             const response = await client.fileImages(fileId, {
                 ids: [nodeId],
@@ -72,16 +75,15 @@ export const zipAssets = async (fileId, dest) => {
     const thisFileName = await getFileName(currentFileId);
     console.log(`Start download files from Figma file: ${thisFileName}...`);
     await exportAssets(fileId, dest);
-    await zip({
-        source: `${dest}/*`,
-        destination: `./${thisFileName}_${dest}.zip`
-    }).then(function () {
-        console.log(`Zipped your Figma file: ${thisFileName} to ${thisFileName}_${dest}.zip!`);
-    }).catch(function (err) {
-        console.error(err.stack);
-        process.exit(1);
-    });
-
+    // await zip({
+    //     source: `${dest}/*`,
+    //     destination: `./${thisFileName}_${dest}.zip`
+    // }).then(function () {
+    //     console.log(`Zipped your Figma file: ${thisFileName} to ${thisFileName}_${dest}.zip!`);
+    // }).catch(function (err) {
+    //     console.error(err.stack);
+    //     process.exit(1);
+    // });
 }
 
 zipAssets(currentFileId, 'assets');
